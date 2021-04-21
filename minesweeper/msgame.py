@@ -181,6 +181,9 @@ class MSGame(object):
             self.game_status = 2  # game continues
             # self.print_board()
 
+    def getGameState(self):
+        return self.board.getInfoMap()
+
     def print_board(self):
         """Print board."""
         self.board.print_board()

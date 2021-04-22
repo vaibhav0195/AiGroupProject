@@ -7,7 +7,7 @@ Email : duguyue100@gmail.com
 from __future__ import print_function
 import socket
 from minesweeper.msboard import MSBoard
-
+from minesweeper.util import MoveResult
 
 class MSGame(object):
     """Define a Mine Sweeper game."""
@@ -31,6 +31,9 @@ class MSGame(object):
             the ip address for receiving the command,
             default is localhost.
         """
+        self.looseReward = -10
+        self.winReward = 10
+        self.progressReward = 1
         if (board_width <= 0):
             raise ValueError("the board width cannot be non-positive!")
         else:
@@ -46,16 +49,23 @@ class MSGame(object):
                              "number of grids!")
         else:
             self.num_mines = num_mines
-
+        """
+        0-8 is number of mines in srrounding.
+        9 is flagged field.
+        10 is questioned field.
+        11 is undiscovered field.
+        12 is a mine field.
+        """
+        self.cellsStateCount = 13
         self.TCP_PORT = port
         self.TCP_IP = ip_add
         self.BUFFER_SIZE = 1024
-
+        self.explosion = False
         self.move_types = ["click", "flag", "unflag", "question"]
 
         self.init_new_game()
 
-    def init_new_game(self, with_tcp=True):
+    def init_new_game(self, with_tcp=False):
         """Init a new game.
 
         Parameters
@@ -152,7 +162,15 @@ class MSGame(object):
             Y position of the move
         """
         # record the move
+
         if self.game_status == 2:
+            if move_type == "click":
+                undiscovPieces = self.board.getUndiscovered()
+                # print(undiscovPieces)
+                if self.num_mines == undiscovPieces:
+                    self.game_status =1
+                    self.end_game()
+                    return MoveResult(False, reward=self.winReward)
             self.move_history.append(self.check_move(move_type, move_x,
                                                      move_y))
         else:
@@ -172,13 +190,17 @@ class MSGame(object):
         if self.board.check_board() == 0:
             self.game_status = 0  # game loses
             # self.print_board()
+            self.explosion = True
             self.end_game()
+            return MoveResult(True,reward=self.looseReward)
         elif self.board.check_board() == 1:
             self.game_status = 1  # game wins
             # self.print_board()
             self.end_game()
+            return MoveResult(False, reward=self.winReward)
         elif self.board.check_board() == 2:
             self.game_status = 2  # game continues
+            return MoveResult(False, reward=self.progressReward)
             # self.print_board()
 
     def getGameState(self):
@@ -209,6 +231,12 @@ class MSGame(object):
             print("[MESSAGE] YOU LOSE!")
         elif self.game_status == 1:
             print("[MESSAGE] YOU WIN!")
+
+    def isGameOver(self):
+        if self.game_status ==0 or self.game_status ==1:
+            return True
+        else:
+            return False
 
     def parse_move(self, move_msg):
         """Parse a move from a string.
@@ -279,3 +307,9 @@ class MSGame(object):
                    "(5) Print board: print\n"
 
         self.tcp_send(help_msg)
+
+    def getExposed(self):
+        return self.board.getExposed()
+
+    def IsActionValid(self, row, col):
+        return self.board.IsActionValid(row,col)

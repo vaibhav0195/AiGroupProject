@@ -41,6 +41,7 @@ class MSBoard(object):
         else:
             self.num_mines = num_mines
 
+        # self.exposed = [[False for y in range(self.board_height)] for x in range(self.board_width)]
         self.init_board()
 
     def init_board(self):
@@ -72,6 +73,7 @@ class MSBoard(object):
 
         self.info_map = np.ones((self.board_height, self.board_width),
                                 dtype=np.uint8)*11
+        self.exposed = [[False for y in range(self.board_height)] for x in range(self.board_width)]
 
     def click_field(self, move_x, move_y):
         """Click one grid by given position."""
@@ -81,6 +83,8 @@ class MSBoard(object):
         if field_status == 11:
             if self.mine_map[move_y, move_x] == 1:
                 self.info_map[move_y, move_x] = 12
+                # print("Mine")
+                self.exposed[move_y][move_x] = True
             else:
                 # discover the region.
                 self.discover_region(move_x, move_y)
@@ -94,6 +98,8 @@ class MSBoard(object):
 
             (tl_idx, br_idx, region_sum) = self.get_region(field[1], field[0])
             if region_sum == 0:
+                # print("Exposing {}".format(field))
+                self.exposed[field[0]][field[1]] = True
                 self.info_map[field[0], field[1]] = region_sum
                 # get surrounding to queue
                 region_mat = self.info_map[tl_idx[0]:br_idx[0]+1,
@@ -106,6 +112,8 @@ class MSBoard(object):
                     if field_temp not in field_list:
                         field_list.append(field_temp)
             elif region_sum > 0:
+                # print("Exposing {}".format(field))
+                self.exposed[field[0]][field[1]] = True
                 self.info_map[field[0], field[1]] = region_sum
 
     def get_region(self, move_x, move_y):
@@ -125,6 +133,7 @@ class MSBoard(object):
         # a questioned or undiscovered field
         if field_status != 9 and (field_status == 10 or field_status == 11):
             self.info_map[move_y, move_x] = 9
+            self.exposed[move_y][move_x] = True
 
     def unflag_field(self, move_x, move_y):
         """Unflag or unquestion a grid by given position."""
@@ -132,6 +141,7 @@ class MSBoard(object):
 
         if field_status == 9 or field_status == 10:
             self.info_map[move_y, move_x] = 11
+            self.exposed[move_y][move_x] = False
 
     def question_field(self, move_x, move_y):
         """Question a grid by given position."""
@@ -140,6 +150,7 @@ class MSBoard(object):
         # a questioned or undiscovered field
         if field_status != 10 and (field_status == 9 or field_status == 11):
             self.info_map[move_y, move_x] = 10
+            self.exposed[move_y][move_x] = True
 
     def check_board(self):
         """Check the board status and give feedback."""
@@ -183,4 +194,13 @@ class MSBoard(object):
         return board_str
 
     def getInfoMap(self):
-        return self.getInfoMap()
+        return self.info_map
+
+    def getExposed(self):
+        return self.exposed
+
+    def IsActionValid(self, row, col):
+        return not (self.exposed[row][col])
+
+    def getUndiscovered(self):
+        return np.sum(self.info_map == 11)

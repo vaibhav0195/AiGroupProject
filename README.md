@@ -28,7 +28,7 @@ and then can start the game using the following commands
 python
 from minesweeper import *
 from bfs_dfs import *
-msgame = MSGame(10,10,10)
+msgame = MSGame(10,10,12)
 solve_bfs_dfs(msgame)
 
 ```

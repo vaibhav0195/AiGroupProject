@@ -4,8 +4,11 @@ This is the AI repo for the group project for the course CS7IS2.
 Team members and their implemented algorithms are
 
 Vaibhav Gusain - Qlearning
+
 Jorge González Escribano - CSP
+
 Sachin Arvind Gade -  Logic Inference
+
 Vardan Kaushik - Uninformed search
 
 To run the Qlearning agent please see the instruction in the readme.md file in the master branch

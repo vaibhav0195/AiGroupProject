@@ -96,8 +96,15 @@ def set_nodes_as_safe(unrev_adj_nodes):
 
 def solve(bfs=True):
     queue = []
-    queue.extend(list(filter(evalutable_node, minesweeper.get_flat_nodes())))
-    while queue:
+    #queue.extend(list(filter(evalutable_node, minesweeper.get_flat_nodes())))
+    while 1<10:
+        if len(queue)==0:
+            starting_node = random.choice([n for n in minesweeper.get_flat_nodes()])
+            value = minesweeper.click(starting_node.pos[0], starting_node.pos[1])
+            if value == 0:
+                stats['games_lost'] += 1
+                return
+            queue.extend(list(filter(evalutable_node, minesweeper.get_flat_nodes())))
         node_to_evaluate = queue.pop(0)
         surrounding_nodes(*node_to_evaluate.pos)
         safe_nodes = list(map(minesweeper.get_msnode_from_ainode, AI_Board.get_safe_nodes()))
@@ -115,12 +122,6 @@ def solve(bfs=True):
                         queue.append(n)
                     else:
                         queue.insert(0, n)
-    stats['games_lost'] += 1
-    if bfs:
-        print("BFS: Could not find any more safe nodes")
-    else:
-        print("DFS: Could not find any more safe nodes")
-    return
 
 
 def is_game_won():
@@ -151,9 +152,5 @@ def solve_bfs_dfs(ms):
         stats['win_rate'] = stats['games_won']/(stats['games_won'] + stats['games_lost'])
 
         stat_list.append(stats)
-    #print("Grid size\tNo of mines\tTime\t\t\tEvaluations\tGames won\tGames lost\tAlgorithm\tWin rate")
-
-    #for dic in stat_list:
-    #    print(*list(dic.values()), sep='\t\t')
 
     print(pd.DataFrame(stat_list))

@@ -14,6 +14,9 @@ To run the uninformed search agent please see the instruction in the readme.md f
 To run the Logic inference agent please see the instruction in the readme.md file in the Sachin_Logic_inference branch
 
 The minutes of meeting is present in the Minutes.pdf file
+
 The TODO list is present in the TODO.pdf file
+
 The final group report is present in the Report.pdf file
+
 The contribution of each members are listed in the readme.txt

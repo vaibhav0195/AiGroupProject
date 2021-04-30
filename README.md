@@ -15,4 +15,5 @@ To run the Logic inference agent please see the instruction in the readme.md fil
 
 The minutes of meeting is present in the Minutes.pdf file
 The TODO list is present in the TODO.pdf file
- 
+The final group report is present in the Report.pdf file
+The contribution of each members are listed in the readme.txt

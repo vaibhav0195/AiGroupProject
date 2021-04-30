@@ -228,8 +228,10 @@ class MSGame(object):
         TODO: some more expections..
         """
         if self.game_status == 0:
+            self.explosion = True
             print("[MESSAGE] YOU LOSE!")
         elif self.game_status == 1:
+            self.explosion = False
             print("[MESSAGE] YOU WIN!")
 
     def isGameOver(self):

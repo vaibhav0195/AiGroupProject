@@ -1,6 +1,7 @@
 from minesweeper.msgame import MSGame
 import numpy as np
 from sklearn.linear_model import Ridge
+import pickle
 
 class QLearningAgentAI:
 
@@ -88,7 +89,7 @@ class QLearningAgentAI:
         """
 
         Q = np.dot(self.W, currentState) + self.b
-        expo = np.reshape(np.asarray(self.gameObject.getExposed()), -1)
+        expo = np.reshape(np.asarray(self.gameObject.getExposed()).T, -1)
         tmp = np.asarray(np.logical_not(expo), 'float')
         tmp[tmp == 0] = -np.inf
         Q[expo] = np.abs(Q[expo])
@@ -129,15 +130,16 @@ class QLearningAgentAI:
                 except Exception as e:
                     print(e)
         # pdb.set_trace()
+        self.SaveParams()
         self.counterUpdates += 1
         self._epsilonProb = np.maximum(0, self._epsilonProb - 0.02)
         print(self.counterWins)
         self.counterWins = 0
 
-    def next(self):
-        cells = np.reshape(np.asarray(self.gameObject.getGameState()), -1)
-        cells[np.isnan(cells.astype(float))] = 9
-        currentState = np.reshape(np.eye(self.gameObject.cellsStateCount)[np.asarray(cells, 'int')], [-1])
+    def next(self,):
+        cells = np.asarray(self.gameObject.getGameState()).reshape(-1)
+        # cells[np.isnan(cells.astype(float))] = 9
+        currentState = np.eye(self.gameObject.cellsStateCount)[np.asarray(cells, 'int')].reshape([-1])
         counter = 0
         Q = np.dot(self.W, currentState) + self.b
         zipped = list(zip(Q, self.actionsId))
@@ -145,7 +147,7 @@ class QLearningAgentAI:
         q, aIds = zip(*zipped)
         row = int(aIds[counter] / self.gameObject.board_height)
         col = int(aIds[counter] % self.gameObject.board_width)
-        while self.gameObject.IsActionValid(row, col) == False:
+        while self.gameObject.IsActionValid(col, row) == False:
             counter += 1
             row = int(aIds[counter] / self.gameObject.board_height)
             col = int(aIds[counter] % self.gameObject.board_width)
@@ -155,3 +157,28 @@ class QLearningAgentAI:
         self.gameObject.reset_game()
         cells = np.asarray(self.gameObject.getGameState()).reshape(-1)
         self.currentState = np.eye(self.gameObject.cellsStateCount)[np.asarray(cells, 'int')].reshape([-1])
+
+    def SaveParams(self):
+        pickle.dump([[self.W,self.b],
+                      [self.gameObject]  ],open(self._savepath+str(self.counterWins),'wb' ))
+    def loadParams(self,params):
+        self.W = params[0]
+        self.b = params[1]
+
+    def isGameOver(self):
+        return self.gameObject.isGameOver()
+
+def LoadModel(path):
+    gameObject = MSGame(10, 10, 12)
+    dictGame = {
+        'discountFactor': 0.9,
+        'memorySize': 500000,
+        'alphaRidge': 0.001,
+        'epsilonProb': 0.2,
+        'savePath': "model.pkl1878",
+        'gameObject': gameObject
+    }
+    params, extraParams = pickle.load(open(path,'rb'))
+    agent = QLearningAgentAI(**dictGame)
+    agent.loadParams(params)
+    return agent

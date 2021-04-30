@@ -1,30 +1,43 @@
-from GameAI.qLearning import QLearningAgentAI
+from GameAI.qLearning import QLearningAgentAI,LoadModel
 from minesweeper.msgame import MSGame
 from minesweeper.util import GameResult
 import numpy as np
 from tqdm import tqdm
 
-def testGames(num_games,game, ai, viz=None):
+def testGames(num_games, ai, viz=None):
     results = []
+
     for x in tqdm(range(num_games)):
         # game = Game(config)
+        ai.resetAgentState()
+        # game.init_new_game()
+        # print("playing game {}".format(x))
         if viz: print("HUHUHUHUH")
-        while not game.isGameOver():
+        while not ai.isGameOver():
             # pdb.set_trace()
             coords = ai.next()
-            result = game.play_move("click",*coords)
-            print(result)
+            # print(coords)
+            result = ai.gameObject.play_move("click",*coords)
+            # print(result)
             if result is None:
                 continue
             # print(np.asarray(game.getGameState()))
             # pdb.set_trace()
 
         if result.explosion:
-            print("EXPLOOOOOOOOOSION")
+            pass
+            # print("EXPLOOOOOOOOOSION")
         else:
             print("Game won")
             # pdb.set_trace()
-        results.append(GameResult(not game.explosion, game.num_moves))
+        results.append(GameResult(not ai.gameObject.explosion, ai.gameObject.num_moves))
+    numWins = 0
+    for gameRes in results:
+        if gameRes.success:
+            numWins +=1
+
+    print ("won {}games out of {}".format(numWins,num_games))
+
     return results
 
 def trainAi(ai,iterationCount):
@@ -46,15 +59,19 @@ def trainAi(ai,iterationCount):
     # pdb.set_trace()
 
 if __name__ == '__main__':
+    phase = "test"
     gameObject = MSGame(10, 10, 12)
     dictGame = {
         'discountFactor': 0.9,
-        'memorySize': 1000000,
+        'memorySize': 500000,
         'alphaRidge': 0.001,
         'epsilonProb': 0.2,
         'savePath': "model.pkl",
         'gameObject' : gameObject
     }
-    gameAgent = QLearningAgentAI(**dictGame)
-    trainAi(gameAgent,int(2e7))
-    # testGames(1000,gameObject,gameAgent)
+    if phase == "train":
+        gameAgent = QLearningAgentAI(**dictGame)
+        # trainAi(gameAgent,int(2e7))
+    else:
+        gameAgent = LoadModel("model.pkl1878")
+        testGames(2000,gameAgent)

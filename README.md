@@ -21,7 +21,8 @@ __From PyPI (the latest stable version)__
 pip install minesweeper
 ```
 
-Once you installed, you can start the game using the following commands
+Once you installed, open cmd from the folder directory 
+and then can start the game using the following commands
 
 ```bash
 python

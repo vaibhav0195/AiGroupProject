@@ -30,6 +30,7 @@ from minesweeper import *
 from bfs_dfs import *
 msgame = MSGame(10,10,10)
 solve_bfs_dfs(msgame)
+
 ```
 
 
